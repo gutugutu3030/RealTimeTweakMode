@@ -1,0 +1,5 @@
+  thisapapapapapa=this;
+  System.setProperty("java.home", "JDK_PATH");
+  compiler = ToolProvider.getSystemJavaCompiler();
+  if (compiler==null)exit();
+  new MirrorThread(this).start();

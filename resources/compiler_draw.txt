@@ -1,0 +1,21 @@
+draw() {
+  if (apapapapapa!=null) {
+    try {
+      Class<?> clazz = Class.forName(targetClass, true, loader);
+      clazz.getField("frameCount").set(apapapapapa, frameCount);
+      clazz.getField("mouseX").set(apapapapapa, mouseX);
+      clazz.getField("mouseY").set(apapapapapa, mouseY);
+      clazz.getField("mousePressed").set(apapapapapa, mousePressed);
+      clazz.getField("mouseButton").set(apapapapapa, mouseButton);
+      clazz.getField("keyPressed").set(apapapapapa, keyPressed);
+      clazz.getField("key").set(apapapapapa, key);
+      clazz.getField("keyCode").set(apapapapapa, keyCode);
+    }
+    catch(Exception e) {
+    }
+    try {
+      apapapapapa.draw();
+    }
+    catch(Exception e) {
+    }
+  }

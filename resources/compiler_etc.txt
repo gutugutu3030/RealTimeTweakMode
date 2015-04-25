@@ -1,0 +1,95 @@
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
+import java.io.File;
+import java.lang.reflect.*;
+import java.net.URL;
+import java.net.URLClassLoader;
+
+String targetClass = "TempPApplet";
+String targetMethod = "draw";
+String targetFile, targetFolder;
+JavaCompiler compiler;
+ClassLoader loader;
+PApplet apapapapapa,thisapapapapapa;
+boolean compiledSecond=false;
+
+class MirrorThread extends Thread {
+  PApplet thisapapapapapa;
+  boolean running=true;
+  MirrorThread(PApplet apapapapapa) {
+    thisapapapapapa=apapapapapa;
+  }
+  void run() {
+    while (running) {
+      try {
+        int ret = compiler.run(null, null, null,
+        new String[] {
+          targetFile
+        }
+        );
+        if (ret == 0) {
+          if (compiledSecond) {
+            Field field[]=Class.forName(targetClass, true, loader).getDeclaredFields();
+            for (Field f:field) {
+              try {
+                String name=f.getName();
+                if (name.equals("apa"))continue;
+                Field thisf=thisapapapapapa.getClass().getDeclaredField(name);
+                f.setAccessible(true);
+                thisf.set(thisapapapapapa, f.get(apapapapapa));
+              }
+              catch(Exception e) {
+                e.printStackTrace();
+              }
+            }
+          }
+          compiledSecond=true;
+
+          loader = URLClassLoader.newInstance(
+          new URL[] {
+            new File(targetFolder).toURI().toURL()
+          }
+          ,
+          this.getClass().getClassLoader());
+          Class<?> clazz = Class.forName(targetClass, true, loader);
+          if (clazz != null) {
+            Method method = clazz.getMethod(targetMethod);
+            Object instance=clazz.newInstance();
+            clazz.getField("apa").set(instance, apapapapapa);
+            apapapapapa=(PApplet)instance;
+            clazz.getField("g").set(apapapapapa, g);
+            clazz.getField("width").set(apapapapapa, width);
+            clazz.getField("height").set(apapapapapa, height);
+            clazz.getField("displayWidth").set(apapapapapa, width);
+            clazz.getField("displayHeight").set(apapapapapa, height);
+            clazz.getField("sketchPath").set(apapapapapa, sketchPath);
+
+            {
+              Field field[]=clazz.getDeclaredFields();
+              for (Field f:field) {
+                try {
+                  String name=f.getName();
+                  if (name.equals("apa"))continue;
+                  Field thisf=thisapapapapapa.getClass().getDeclaredField(name);
+                  f.setAccessible(true);
+                  f.set(apapapapapa, thisf.get(thisapapapapapa));
+                }
+                catch(Exception e) {
+                  e.printStackTrace();
+                }
+              }
+            }
+          }
+        }
+      }
+      catch(Exception e) {
+        e.printStackTrace();
+      }
+      try{
+        Thread.sleep(99);
+      }catch(Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+}
