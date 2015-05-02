@@ -1,12 +1,18 @@
 package gutugutu3030.realtime;
 
 import java.io.File;
+import java.io.PrintWriter;
+
 import javax.swing.JFrame;
+
 import java.awt.*;
 import java.io.FileWriter;
 import java.util.regex.*;
 import java.awt.event.*;
+
 import processing.app.*;
+import antlr.RecognitionException;
+import processing.mode.java.preproc.*;
 
 public class MirrorThread2 extends Thread {
 	boolean running = true;
@@ -15,16 +21,16 @@ public class MirrorThread2 extends Thread {
 	RealtimeTweakMode mode;
 	String presantCode = null;
 	int playCode_index = -1;
-	Pattern doubleToFloat, colorChanger;
+	Pattern colorChanger;
 	ColorSelecter cs;
 	JFrame colorframe;
 	boolean test = false;
+	PdePreprocessor preproc;
 
 	public MirrorThread2(RealtimeTweakMode mode) {
+		// TODO 自動生成されたコンストラクター・スタブ
 		this.mode = mode;
 		tempAppletAddtion = mode.readTXT(mode.modePath("../tempapplet.txt"));
-		doubleToFloat = Pattern
-				.compile("(?:^|[^\\.\\d])(\\d+\\.\\d+)(?:[^\\.\\d]|$)");
 		colorChanger = Pattern.compile("^(background|fill|stroke)$");
 		colorframe = new JFrame("color");
 		Insets insets = colorframe.getInsets();
@@ -42,6 +48,7 @@ public class MirrorThread2 extends Thread {
 				tweaktype = -1;
 			}
 		});
+		preproc = new PdePreprocessor("TempPApplet");
 	}
 
 	public void setEditor(RealtimeTweakEditor editor) {
@@ -67,7 +74,7 @@ public class MirrorThread2 extends Thread {
 				continue;
 			}
 			presantCode = new String(editor.getText());
-			//recording index reffered editor
+			// editorが今参照しているインデックスを記録
 			{
 				int tmp_playCode_index = -1;
 				for (int i = 0; i < playCode.length; i++) {
@@ -84,89 +91,35 @@ public class MirrorThread2 extends Thread {
 			}
 			// System.out.println("playCode_index:" + playCode_index);
 
-			File file = new File(mode.modePath("TempPApplet.java"));
-			try {
-				FileWriter filewriter = new FileWriter(file);
-				// FileWriter testr = new FileWriter(new File(
-				// mode.modePath("test.txt")));
-				// testr.write(editor.getText());
-				// testr.close();
-
-				// edit imports
-				StringBuilder getText = new StringBuilder();
-				{
-					// SketchCode codes[] = editor.getSketch().getCode();
-					for (String sss : playCode) {
-						String imports[] = sss.split(";");// .getProgram().split(";");
-						for (String s : imports) {
-							if (s.indexOf("import ") != -1) {
-								filewriter.write(s + ";");
-							} else if (s == imports[imports.length - 1]) {
-								getText.append(s);
-							} else {
-								getText.append(s);
-								getText.append(";");
-								// getText+=s+";";
-							}
-						}
-					}
-				}
-
-				// filewriter.write(tempAppletAddtion.replace("XXXXX",
-				// editor.getSketch().getName()));
-				filewriter.write(tempAppletAddtion.replace("XXXXX", "PApplet"));
-
-				// double to float
-				Matcher m = doubleToFloat.matcher(getText);
-				StringBuffer sb = new StringBuffer();
-				while (m.find()) {
-					getText.insert(m.end() - 1, "f");
-				}
-
-				String str[] = new String(getText).split("\n");
-				for (String s1 : str) {
-					boolean public_flg = false;
-					if (ifContein(s1, "setup()"))
-						public_flg = true;
-					if (ifContein(s1, "draw()"))
-						public_flg = true;
-					if (ifContein(s1, "mousePressed()"))
-						public_flg = true;
-					if (ifContein(s1, "mouseReleased()"))
-						public_flg = true;
-					if (ifContein(s1, "keyPressed()"))
-						public_flg = true;
-					if (ifContein(s1, "keyReleased()"))
-						public_flg = true;
-					if (ifContein(s1, "windowClosing("))
-						public_flg = true;
-					if (ifContein(s1, "String", "toString()"))
-						public_flg = true;
-					if (public_flg) {
-						filewriter.write(" public ");
-					}
-					filewriter.write(s1 + "\n");
-				}
-				filewriter.write("}");
-				filewriter.close();
-			} catch (Exception e) {
-				e.printStackTrace();
+			String bigCode = "";
+			bigCode += tempAppletAddtion;
+			int bigCount = 0;
+			for (String sc : playCode) {
+				bigCode += sc + "\n";
 			}
 			try {
-				Thread.sleep(100);
+				File java = new File(mode.modePath("TempPApplet.java"));
+				PrintWriter stream = new PrintWriter(new FileWriter(java));
+				PreprocessorResult result;
+				try {
+					result = preproc.write(stream, bigCode.toString());
+				} finally {
+					stream.close();
+				}
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
 
 	int tweaktype = -1;
 	int selectedLine = -1;
-	String presant_selected = null;// for selecting color
-	String presant_selected1 = null, presant_selected2 = null;// for selecting number
-	int selectednum = -1;// for selecting number
+	String presant_selected = null;// 色選択用
+	String presant_selected1 = null, presant_selected2 = null;// 数字選択用
+	int selectednum = -1;// 数字選択用
 
 	public void selecterClose() {
-		//System.out.println("呼び出し");
+		System.out.println("呼び出し");
 		colorframe.setVisible(false);
 		tweaktype = -1;
 	}
@@ -177,7 +130,7 @@ public class MirrorThread2 extends Thread {
 		// System.out.println("rttp "+editor.rtTextArea.rttp.dragtype);
 		if (tweaktype != -1) {
 			switch (tweaktype) {
-			case 0:// change color
+			case 0:// 色の変更
 				int c[] = cs.getColor();
 				if (c != null) {
 

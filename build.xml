@@ -11,14 +11,14 @@
 	<property name="java.target.version" value="1.6" />
 
 	<!-- location of processing jars (core.jar, pde.jar, ..) -->
-	<property name="processing.classes.core" location="${user.home}\\Dropbox\\java\\testProcessingTool" />
-	<property name="processing.classes.pde" location="${user.home}\\Dropbox\\java\\testProcessingTool" />
+	<property name="processing.classes.core" location="D:\Dropbox\java\realtimeTweakMode" />
+	<property name="processing.classes.pde" location="D:\Dropbox\java\realtimeTweakMode" />
 
 	<!-- folder to install modes in (probably a folder called "modes" inside your sketchbook folder) -->
-	<property name="processing.modes" location="${user.home}\\Dropbox\\processing\\modes" />
+	<property name="processing.modes" location="D:\\Dropbox\\processing\\modes" />
 
 	<!-- path to your processing executable. -->
-	<property name="processing.executable" location="C:\\processing-2.2.1\\processing.exe" />
+	<property name="processing.executable" location="D:\\processing-2.2.1\\processing.exe" />
 
 	<condition property="is.normal">
 		<equals arg1="${project.compile}" arg2="normal" />
@@ -32,7 +32,13 @@
 	<property name="dist" value="dist" />
 
 	<path id="library-classpath">
-		<fileset dir="${processing.classes.core}" includes="core.jar,pde.jar" />
+		<fileset dir="${processing.classes.core}">
+			<include name="*.jar" />
+		</fileset>
+
+		<fileset dir="${processing.classes.pde}">
+			<include name="*.jar" />
+		</fileset>
 
 		<fileset dir="lib">
 			<include name="*.jar" />
